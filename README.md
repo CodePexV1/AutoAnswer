@@ -11,7 +11,7 @@ using **Groq (free)** or **ChatGPT** with your own API key.
 
 👨‍💻 **Coded by Idok**
 
-<img src="https://flagcdn.com/24x18/us.png" width="20" height="15" alt="US flag"> [English](#english) · <img src="https://flagcdn.com/24x18/il.png" width="20" height="15" alt="Israel flag"> [עברית](#עברית)
+<img src="https://flagcdn.com/24x18/us.png" width="20" height="15" alt="US flag"> [English](#-english) · <img src="https://flagcdn.com/24x18/il.png" width="20" height="15" alt="Israel flag"> [עברית](#-עברית)
 
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
 ![Groq](https://img.shields.io/badge/AI-Groq%20(free)-F55036)
