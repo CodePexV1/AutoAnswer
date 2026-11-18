@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <title>AutoAnswer</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><img src="../icons/icon32.png" alt=""><span>AutoAnswer</span></div>
+    <label class="switch" title="Alt+Shift+A">
+      <input type="checkbox" id="enabled" aria-label="הפעלה">
+      <span class="track"><span class="thumb"></span></span>
+    </label>
+  </header>
+  <p class="status" id="status">כבוי</p>
+
+  <div class="seg" role="radiogroup" aria-label="ספק AI">
+    <button type="button" data-provider="grok" role="radio">Grok</button>
+    <button type="button" data-provider="openai" role="radio">ChatGPT</button>
+  </div>
+
+  <label class="field">
+    <span>מפתח API</span>
+    <input type="password" id="key" autocomplete="off" spellcheck="false" dir="ltr" placeholder="xai-...">
+  </label>
+  <label class="field">
+    <span>מודל</span>
+    <input type="text" id="model" list="models" spellcheck="false" dir="ltr">
+    <datalist id="models"></datalist>
+  </label>
+  <p class="hint" id="hint">לחיצה כפולה על שאלה = תשובה אוטומטית</p>
+
+  <script src="popup.js"></script>
+</body>
+</html>

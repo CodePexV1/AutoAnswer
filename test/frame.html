@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { font: 16px/1.5 system-ui, Arial, sans-serif; margin: 12px; }
+  .zones { display: flex; gap: 10px; margin-top: 10px; }
+  .chip { padding: 8px 14px; background: #fde68a; border-radius: 8px; cursor: grab; display: inline-block; margin: 4px; }
+  .drop-zone { flex: 1; min-height: 60px; border: 2px dashed #94a3b8; border-radius: 8px; padding: 6px; }
+  .result { font-size: 12px; color: #888; } .result.pass { color: #16a34a; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div id="fq1">
+    <b>א. השלם: השמש היא ____</b>
+    <input type="text" id="sun" style="font:inherit;padding:4px 8px">
+  </div>
+  <div id="fq2" style="margin-top:14px">
+    <b>ב. גרור כל חיה לקבוצה שלה: יונק או ציפור</b>
+    <div>
+      <span class="chip" draggable="true" data-v="mammal">כלב</span>
+      <span class="chip" draggable="true" data-v="bird">נשר</span>
+    </div>
+    <div class="zones">
+      <div class="drop-zone" data-v="bird"><b>ציפור</b></div>
+      <div class="drop-zone" data-v="mammal"><b>יונק</b></div>
+    </div>
+  </div>
+  <div class="result" id="res"></div>
+<script>
+  const zones = [...document.querySelectorAll('.drop-zone')];
+  let dragged = null;
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('dragstart', e => { dragged = c; e.dataTransfer.setData('text', c.dataset.v); }));
+  zones.forEach(z => { z.addEventListener('dragover', e => e.preventDefault()); z.addEventListener('drop', e => { e.preventDefault(); if (dragged) z.appendChild(dragged); check(); }); });
+  function check() {
+    const a = /כוכב/.test(document.getElementById('sun').value);
+    const b = zones.every(z => z.querySelector('.chip')?.dataset.v === z.dataset.v);
+    const r = document.getElementById('res');
+    r.textContent = `fill:${a ? 'PASS' : 'no'} drag:${b ? 'PASS' : 'no'}`;
+    r.className = 'result' + (a && b ? ' pass' : '');
+    document.body.dataset.pass = (a ? 'A' : '') + (b ? 'B' : '');
+  }
+  document.addEventListener('input', check);
+  check();
+</script>
+</body>
+</html>

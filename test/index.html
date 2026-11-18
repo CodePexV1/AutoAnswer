@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoAnswer - דף בדיקה</title>
+<style>
+  body { font: 16px/1.5 system-ui, Arial, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; background: #f4f6f8; color: #111; }
+  .q { background: #fff; border-radius: 10px; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  .q h3 { margin: 0 0 10px; font-size: 17px; }
+  .result { font-size: 12px; color: #888; margin-top: 8px; }
+  .result.pass { color: #16a34a; font-weight: 700; }
+  label { display: block; margin: 4px 0; cursor: pointer; }
+  input[type=text], textarea, select { font: inherit; padding: 6px 8px; width: 100%; box-sizing: border-box; }
+  .gf-opt { display: flex; gap: 8px; align-items: center; padding: 6px; cursor: pointer; border-radius: 6px; }
+  .gf-opt .dot { width: 16px; height: 16px; border: 2px solid #5f6368; border-radius: 50%; box-sizing: border-box; }
+  .gf-opt[aria-checked=true] .dot { border: 5px solid #673ab7; }
+  .bank, .zones { display: flex; gap: 10px; flex-wrap: wrap; min-height: 48px; padding: 8px; background: #f8fafc; border-radius: 8px; }
+  .chip { padding: 8px 14px; background: #fde68a; border-radius: 8px; cursor: grab; user-select: none; }
+  .drop-zone { min-width: 140px; min-height: 70px; border: 2px dashed #94a3b8; border-radius: 8px; padding: 6px; }
+  .drop-zone b { display: block; font-size: 13px; color: #475569; }
+  .bucket { flex: 1; min-height: 110px; border: 2px dashed #94a3b8; border-radius: 8px; padding: 6px; }
+  .bucket b { display: block; font-size: 13px; }
+  .m-chip { display: inline-block; padding: 8px 14px; background: #bfdbfe; border-radius: 8px; cursor: move; user-select: none; position: relative; margin: 4px; }
+  .pic { display: inline-block; margin: 6px; border: 2px solid transparent; border-radius: 8px; cursor: pointer; }
+  .pic.sel { border-color: #16a34a; }
+</style>
+</head>
+<body>
+<h1>דף בדיקה ל-AutoAnswer</h1>
+<p>הפעל את התוסף ולחץ פעמיים על טקסט של כל שאלה.</p>
+
+<div class="q" id="q1">
+  <h3>1. מהי בירת צרפת?</h3>
+  <label><input type="radio" name="q1" value="a"> לונדון</label>
+  <label><input type="radio" name="q1" value="b"> פריז</label>
+  <label><input type="radio" name="q1" value="c"> רומא</label>
+  <label><input type="radio" name="q1" value="d"> מדריד</label>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q2">
+  <h3>2. אילו מהמספרים הבאים הם מספרים ראשוניים? (סמן את כל התשובות הנכונות)</h3>
+  <label><input type="checkbox" value="4"> 4</label>
+  <label><input type="checkbox" value="7"> 7</label>
+  <label><input type="checkbox" value="9"> 9</label>
+  <label><input type="checkbox" value="11"> 11</label>
+  <label><input type="checkbox" value="15"> 15</label>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q3">
+  <h3>3. כמה זה 12 כפול 7?</h3>
+  <input type="text" placeholder="התשובה שלך">
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q4">
+  <h3>4. הסבר במשפט אחד או שניים: מהי פוטוסינתזה?</h3>
+  <textarea rows="3"></textarea>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q5">
+  <h3>5. באיזו יבשת נמצאת מצרים?</h3>
+  <select>
+    <option value="">בחר...</option>
+    <option value="asia">אסיה</option>
+    <option value="africa">אפריקה</option>
+    <option value="europe">אירופה</option>
+    <option value="america">אמריקה</option>
+  </select>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q6" role="listitem">
+  <div role="heading" aria-level="3"><h3>6. כמה רגליים יש לעכביש?</h3></div>
+  <div role="radiogroup">
+    <div class="gf-opt" role="radio" aria-checked="false" data-value="6" aria-label="6" tabindex="0"><span class="dot"></span><span>6</span></div>
+    <div class="gf-opt" role="radio" aria-checked="false" data-value="8" aria-label="8" tabindex="0"><span class="dot"></span><span>8</span></div>
+    <div class="gf-opt" role="radio" aria-checked="false" data-value="10" aria-label="10" tabindex="0"><span class="dot"></span><span>10</span></div>
+  </div>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q7">
+  <h3>7. גרור כל מדינה לבירה שלה</h3>
+  <div class="bank" id="bank7">
+    <div class="chip" draggable="true" data-v="japan">יפן</div>
+    <div class="chip" draggable="true" data-v="italy">איטליה</div>
+    <div class="chip" draggable="true" data-v="egypt">מצרים</div>
+  </div>
+  <div class="zones">
+    <div class="drop-zone" data-v="egypt"><b>קהיר</b></div>
+    <div class="drop-zone" data-v="japan"><b>טוקיו</b></div>
+    <div class="drop-zone" data-v="italy"><b>רומא</b></div>
+  </div>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q8">
+  <h3>8. מיין את המספרים: גרור כל מספר לקבוצה הנכונה - זוגי או אי-זוגי</h3>
+  <div id="pool8">
+    <span class="m-chip" data-n="3">3</span>
+    <span class="m-chip" data-n="8">8</span>
+    <span class="m-chip" data-n="14">14</span>
+    <span class="m-chip" data-n="21">21</span>
+  </div>
+  <div class="zones">
+    <div class="bucket" data-kind="even"><b>זוגי</b></div>
+    <div class="bucket" data-kind="odd"><b>אי-זוגי</b></div>
+  </div>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q9">
+  <h3>9. כמה משולשים יש בציור?</h3>
+  <canvas id="cv9" width="320" height="120" style="background:#fff;border:1px solid #ddd"></canvas>
+  <input type="text" placeholder="מספר">
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q10">
+  <h3>10. לחץ על התמונה שבה מופיע עיגול אדום</h3>
+  <canvas class="pic" data-ok="0" width="90" height="90"></canvas>
+  <canvas class="pic" data-ok="1" width="90" height="90"></canvas>
+  <canvas class="pic" data-ok="0" width="90" height="90"></canvas>
+  <div class="result"></div>
+</div>
+
+<div class="q" id="q11">
+  <h3>11. שאלה בתוך iframe (כמו באופק)</h3>
+  <iframe src="frame.html" style="width:100%;height:260px;border:1px solid #ddd;border-radius:8px;background:#fff"></iframe>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function mark(id, ok, detail) {
+  const r = $('#' + id + ' .result');
+  r.textContent = (ok ? 'PASS' : 'not yet') + (detail ? ' - ' + detail : '');
+  r.className = 'result' + (ok ? ' pass' : '');
+  document.getElementById(id).dataset.pass = ok ? '1' : '0';
+}
+function check() {
+  mark('q1', $('#q1 input:checked')?.value === 'b');
+  mark('q2', $$('#q2 input:checked').map(i => i.value).join(',') === '7,11');
+  mark('q3', $('#q3 input').value.trim().replace(/[^\d]/g, '') === '84', $('#q3 input').value);
+  mark('q4', $('#q4 textarea').value.trim().length > 15, $('#q4 textarea').value.slice(0, 60));
+  mark('q5', $('#q5 select').value === 'africa');
+  mark('q6', $('#q6 [aria-checked=true]')?.dataset.value === '8');
+  mark('q7', $$('#q7 .drop-zone').every(z => z.querySelector('.chip')?.dataset.v === z.dataset.v));
+  mark('q8', $$('#q8 .bucket').every(b => {
+    const ns = $$('.m-chip', b).map(c => +c.dataset.n);
+    return ns.length === 2 && ns.every(n => (n % 2 === 0) === (b.dataset.kind === 'even'));
+  }));
+  mark('q9', $('#q9 input').value.replace(/[^\d]/g, '') === '3', $('#q9 input').value);
+  mark('q10', $('#q10 .pic.sel')?.dataset.ok === '1');
+}
+document.addEventListener('input', check);
+document.addEventListener('change', check);
+document.addEventListener('click', () => setTimeout(check, 50));
+
+// q6: ARIA radios (Google Forms style)
+$$('#q6 [role=radio]').forEach(o => o.addEventListener('click', () => {
+  $$('#q6 [role=radio]').forEach(x => x.setAttribute('aria-checked', 'false'));
+  o.setAttribute('aria-checked', 'true'); check();
+}));
+
+// q7: HTML5 drag & drop
+let dragged = null;
+$$('#q7 .chip').forEach(c => c.addEventListener('dragstart', e => { dragged = c; e.dataTransfer.setData('text/plain', c.dataset.v); }));
+$$('#q7 .drop-zone').forEach(z => {
+  z.addEventListener('dragover', e => e.preventDefault());
+  z.addEventListener('drop', e => {
+    e.preventDefault();
+    const v = e.dataTransfer.getData('text/plain');
+    const chip = $(`#q7 .chip[data-v="${v}"]`) || dragged;
+    if (chip) { const old = z.querySelector('.chip'); if (old) $('#bank7').appendChild(old); z.appendChild(chip); }
+    check();
+  });
+});
+
+// q8: mouse-event drag (no HTML5 DnD, like jQuery UI / custom players)
+let md = null;
+$$('#q8 .m-chip').forEach(c => c.addEventListener('mousedown', e => {
+  if (e.button !== 0) return;
+  md = { c, x: e.clientX, y: e.clientY };
+  e.preventDefault();
+}));
+document.addEventListener('mousemove', e => {
+  if (!md) return;
+  md.c.style.left = (e.clientX - md.x) + 'px'; md.c.style.top = (e.clientY - md.y) + 'px';
+  md.c.style.pointerEvents = 'none';
+});
+document.addEventListener('mouseup', e => {
+  if (!md) return;
+  const c = md.c; md = null;
+  c.style.left = c.style.top = ''; c.style.pointerEvents = '';
+  const b = $$('#q8 .bucket').find(b => { const r = b.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; });
+  if (b) b.appendChild(c);
+  check();
+});
+
+// q9: canvas with 3 triangles + 2 squares
+(() => {
+  const g = $('#cv9').getContext('2d');
+  const tri = (x) => { g.beginPath(); g.moveTo(x, 100); g.lineTo(x + 25, 25); g.lineTo(x + 50, 100); g.closePath(); g.fillStyle = '#60a5fa'; g.fill(); };
+  const sq = (x) => { g.fillStyle = '#f97316'; g.fillRect(x, 40, 50, 50); };
+  tri(10); sq(75); tri(140); sq(205); tri(265);
+})();
+
+// q10: picture choice
+(() => {
+  const pics = $$('#q10 .pic');
+  const draw = [(g) => { g.fillStyle = '#2563eb'; g.fillRect(20, 20, 50, 50); },
+                (g) => { g.fillStyle = '#dc2626'; g.beginPath(); g.arc(45, 45, 28, 0, 7); g.fill(); },
+                (g) => { g.fillStyle = '#16a34a'; g.beginPath(); g.moveTo(45, 15); g.lineTo(75, 75); g.lineTo(15, 75); g.fill(); }];
+  pics.forEach((p, i) => {
+    const g = p.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, 90, 90); draw[i](g);
+    p.addEventListener('click', () => { pics.forEach(x => x.classList.remove('sel')); p.classList.add('sel'); check(); });
+  });
+})();
+check();
+// ?mock -> run content.js with a rule-based fake AI (no extension needed)
+if (location.search.includes('mock')) { const s = document.createElement('script'); s.src = 'mock-harness.js'; document.head.appendChild(s); }
+</script>
+</body>
+</html>
