@@ -13,7 +13,7 @@ using **⚡ Groq (free)** or **💬 ChatGPT** with your own API key.
 
 <br>
 
-[🇺🇸 **English**](#-english) &nbsp;&nbsp;•&nbsp;&nbsp; [🇮🇱 **עברית**](#-עברית)
+<img src="https://flagcdn.com/24x18/us.png" width="24" height="18" alt="US flag"> [**English**](#english) &nbsp;&nbsp;•&nbsp;&nbsp; <img src="https://flagcdn.com/24x18/il.png" width="24" height="18" alt="Israel flag"> [**עברית**](#עברית)
 
 <br>
 
@@ -26,11 +26,11 @@ using **⚡ Groq (free)** or **💬 ChatGPT** with your own API key.
 
 ---
 
-## 🇺🇸 English
+## <img src="https://flagcdn.com/24x18/us.png" width="24" height="18" alt="US flag"> English
 
 ### 🚀 Features
 
-| | Feature | |
+| | Feature | What it does |
 |:---:|---|---|
 | 🖱️ | **Double-click to answer** | Turn it on, double-click any question, and the answer is entered for you |
 | 🙈 | **Hidden mode** | On by default: nothing is drawn on the page. The last answer shows in the popup |
@@ -155,7 +155,7 @@ npx http-server . -p 5577
 
 ---
 
-## 🇮🇱 עברית
+## <img src="https://flagcdn.com/24x18/il.png" width="24" height="18" alt="Israel flag"> עברית
 
 <div dir="rtl">
 
