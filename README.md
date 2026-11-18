@@ -9,6 +9,8 @@
 A Chrome extension that fills in answers on Google Forms, Ofek assignments and most other quiz pages,
 using **Groq (free)** or **ChatGPT** with your own API key.
 
+**Coded by Idok**
+
 [English](#english) · [עברית](#עברית)
 
 ![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
@@ -40,7 +42,7 @@ using **Groq (free)** or **ChatGPT** with your own API key.
 
 1. **Download:** click **Code → Download ZIP** on this page and extract it, or run
    ```bash
-   git clone https://github.com/codepexv1/AutoAnswer.git
+   git clone https://github.com/CodePexV1/AutoAnswer.git
    ```
 2. Open `chrome://extensions` in Chrome.
 3. Turn on **Developer mode** (top-right corner).
@@ -168,5 +170,13 @@ npx http-server . -p 5577
 ### פרטיות
 
 המפתח נשמר רק בדפדפן שלך. ל-AI נשלחים רק הטקסט של השאלה, רשימת רכיבי התשובה, ובשאלות ויזואליות צילום של הלשונית.
+
+</div>
+
+---
+
+<div align="center">
+
+**Coded by Idok** · נכתב על ידי Idok
 
 </div>
