@@ -10,12 +10,19 @@
   const IS_TOP = window === window.top;
 
   let enabled = false;
+  let stealth = true; // hidden mode: nothing is drawn on the page
   let busy = false;
 
-  chrome.storage.local.get({ enabled: false }, (s) => { enabled = !!s.enabled; });
+  chrome.storage.local.get({ enabled: false, stealth: true }, (s) => { enabled = !!s.enabled; stealth = !!s.stealth; });
   chrome.storage.onChanged.addListener((c) => {
     if (c.enabled) enabled = !!c.enabled.newValue;
+    if (c.stealth) stealth = !!c.stealth.newValue;
   });
+
+  // The popup shows the last result (the only feedback in hidden mode).
+  function report(ok, text) {
+    try { chrome.storage.local.set({ lastResult: { ok, text: String(text).slice(0, 600), at: Date.now() } }); } catch (_) {}
+  }
 
   // ---------------------------------------------------------------- utils
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -93,6 +100,7 @@
   let toastHost = null;
   let toastTimer = null;
   function toast(text, kind = 'info', ms = 0) {
+    if (stealth) return;
     if (!toastHost) {
       toastHost = document.createElement('div');
       toastHost.setAttribute(UI_ATTR, '');
@@ -422,11 +430,13 @@ Rules:
 - Never click submit / send / next / check buttons.
 - If you cannot determine anything to do, return "actions": [] and explain in "answer".`;
 
-  function buildUserPrompt({ question, list, page, shot }) {
+  function buildUserPrompt({ question, list, page, shot, marked }) {
     return [
       `Page: ${document.title || location.hostname}`,
       page ? 'Scope: the visible part of the page (no single question was identified). Solve what is visible.' : 'Scope: a single question block.',
-      shot ? `A screenshot (${shot.width}x${shot.height}px) is attached; numbered tags in it match the element list, at(x,y) are screenshot pixel coordinates.` : '',
+      shot ? (marked
+        ? `A screenshot (${shot.width}x${shot.height}px) is attached; numbered tags in it match the element list, at(x,y) are screenshot pixel coordinates.`
+        : `A screenshot (${shot.width}x${shot.height}px) is attached (no tags drawn on it); at(x,y) is each listed element's center in screenshot pixel coordinates.`) : '',
       '',
       'QUESTION / SECTION TEXT:',
       question || '(no text - see screenshot)',
@@ -682,7 +692,7 @@ Rules:
 
     const highlight = page ? null : root;
     const prevOutline = highlight ? highlight.style.outline : '';
-    const setHighlight = (on) => { if (highlight) highlight.style.outline = on ? '2px dashed #16a34a' : prevOutline; };
+    const setHighlight = (on) => { if (highlight && !stealth) highlight.style.outline = on ? '2px dashed #16a34a' : prevOutline; };
     setHighlight(true);
 
     try {
@@ -692,7 +702,7 @@ Rules:
       const needShot = page || c.drag > 0 || c.drop > 0 || hasMedia(root) || (c.text + c.choice + c.dropdown === 0) ||
         !!root.querySelector('canvas,svg,math,.MathJax,mjx-container,.katex');
 
-      let shot = null; let toImg = null; let fromImg = null;
+      let shot = null; let toImg = null; let fromImg = null; let shotMarked = false;
       if (needShot) {
         if (!page) {
           const r = root.getBoundingClientRect();
@@ -704,8 +714,10 @@ Rules:
         const off = await getFrameOffset();
         setHighlight(false);
         hideToast();
-        const removeMarks = drawMarks(items);
-        await sleep(100);
+        const marked = !stealth;
+        const removeMarks = marked ? drawMarks(items) : () => {};
+        if (marked) await sleep(100);
+        shotMarked = marked;
         const res = await send({ type: 'capture' });
         removeMarks();
         setHighlight(true);
@@ -721,7 +733,7 @@ Rules:
       const res = await send({
         type: 'ask',
         system: SYSTEM,
-        user: buildUserPrompt({ question, list: describe(items, toImg), page, shot }),
+        user: buildUserPrompt({ question, list: describe(items, toImg), page, shot, marked: shotMarked }),
         image: shot ? shot.dataUrl : null
       });
       if (!res.ok) throw new Error(res.error);
@@ -731,15 +743,18 @@ Rules:
       const ans = norm(String(j.answer || ''));
       if (errors.length) console.warn('[AutoAnswer] failed actions:', errors);
       if (j.actions.length && !done) {
+        report(false, `לא הצלחתי למלא אוטומטית. תשובה: ${ans}`);
         toast(`לא הצלחתי למלא אוטומטית.\nתשובה: ${ans}`, 'err', 15000);
       } else {
+        report(true, `${ans || 'בוצע'}${errors.length ? ` (${errors.length} פעולות נכשלו)` : ''}`);
         toast(`✓ ${ans || 'בוצע'}${errors.length ? `\n(${errors.length} פעולות נכשלו)` : ''}`, 'ok', Math.min(15000, 4000 + ans.length * 60));
       }
     } catch (e) {
       const m = String(e.message || e);
-      const friendly = m === 'NO_KEY' ? 'חסר מפתח API - פתח את התוסף והזן מפתח Grok או ChatGPT'
+      const friendly = m === 'NO_KEY' ? 'חסר מפתח API - פתח את התוסף והזן מפתח Groq או ChatGPT'
         : m === 'TIMEOUT' ? 'הבקשה ל-AI לקחה יותר מדי זמן'
           : m === 'EXTENSION_RELOADED' || /context invalidated/i.test(m) ? 'התוסף עודכן - רענן את הדף (F5)' : m;
+      report(false, friendly);
       toast('✗ ' + friendly, 'err', 9000);
     } finally {
       setHighlight(false);

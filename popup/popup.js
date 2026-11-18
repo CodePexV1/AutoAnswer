@@ -1,13 +1,15 @@
 const DEFAULTS = {
   enabled: false,
-  provider: 'grok',
-  grokKey: '',
+  stealth: true,
+  provider: 'groq',
+  groqKey: '',
   openaiKey: '',
-  grokModel: 'grok-4',
-  openaiModel: 'gpt-4o'
+  groqModel: 'openai/gpt-oss-120b',
+  openaiModel: 'gpt-4o',
+  lastResult: null
 };
 const FIELDS = {
-  grok: { key: 'grokKey', model: 'grokModel', placeholder: 'xai-...' },
+  groq: { key: 'groqKey', model: 'groqModel', placeholder: 'gsk_...' },
   openai: { key: 'openaiKey', model: 'openaiModel', placeholder: 'sk-...' }
 };
 const DEFAULT_HINT = 'לחיצה כפולה על שאלה = תשובה אוטומטית';
@@ -21,8 +23,21 @@ function hint(text, kind = '') {
   h.className = 'hint ' + kind;
 }
 
+function renderLast() {
+  const r = state.lastResult;
+  const el = $('last');
+  if (!r) { el.hidden = true; return; }
+  el.hidden = false;
+  el.className = 'last ' + (r.ok ? 'ok' : 'err');
+  const t = new Date(r.at).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+  $('lastText').textContent = (r.ok ? '✓ ' : '✗ ') + r.text;
+  $('lastTime').textContent = t;
+}
+
 function render() {
+  if (!FIELDS[state.provider]) state.provider = 'groq';
   $('enabled').checked = !!state.enabled;
+  $('stealth').checked = !!state.stealth;
   const st = $('status');
   st.textContent = state.enabled ? 'פעיל - לחץ פעמיים על שאלה' : 'כבוי';
   st.className = 'status' + (state.enabled ? ' on' : '');
@@ -33,6 +48,7 @@ function render() {
   $('key').value = state[f.key] || '';
   $('key').placeholder = f.placeholder;
   $('model').value = state[f.model] || '';
+  renderLast();
 }
 
 async function loadModels() {
@@ -63,6 +79,7 @@ async function save(patch) {
 }
 
 $('enabled').addEventListener('change', (e) => save({ enabled: e.target.checked }));
+$('stealth').addEventListener('change', (e) => save({ stealth: e.target.checked }));
 
 for (const b of document.querySelectorAll('.seg button')) {
   b.addEventListener('click', async () => {
@@ -87,6 +104,10 @@ $('key').addEventListener('input', (e) => {
 $('model').addEventListener('change', (e) => {
   const f = FIELDS[state.provider];
   save({ [f.model]: e.target.value.trim() || DEFAULTS[f.model] });
+});
+
+chrome.storage.onChanged.addListener((c) => {
+  if (c.lastResult) { state.lastResult = c.lastResult.newValue; renderLast(); }
 });
 
 chrome.storage.local.get(DEFAULTS).then((s) => {

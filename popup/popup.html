@@ -16,20 +16,29 @@
   <p class="status" id="status">כבוי</p>
 
   <div class="seg" role="radiogroup" aria-label="ספק AI">
-    <button type="button" data-provider="grok" role="radio">Grok</button>
+    <button type="button" data-provider="groq" role="radio">Groq (חינם)</button>
     <button type="button" data-provider="openai" role="radio">ChatGPT</button>
   </div>
 
   <label class="field">
     <span>מפתח API</span>
-    <input type="password" id="key" autocomplete="off" spellcheck="false" dir="ltr" placeholder="xai-...">
+    <input type="password" id="key" autocomplete="off" spellcheck="false" dir="ltr" placeholder="gsk_...">
   </label>
   <label class="field">
     <span>מודל</span>
     <input type="text" id="model" list="models" spellcheck="false" dir="ltr">
     <datalist id="models"></datalist>
   </label>
+  <label class="row">
+    <input type="checkbox" id="stealth">
+    <span>מצב נסתר - בלי שום סימון או הודעה בדף</span>
+  </label>
   <p class="hint" id="hint">לחיצה כפולה על שאלה = תשובה אוטומטית</p>
+
+  <div class="last" id="last" hidden>
+    <div class="last-head"><span>תשובה אחרונה</span><span id="lastTime"></span></div>
+    <div id="lastText" dir="auto"></div>
+  </div>
 
   <script src="popup.js"></script>
 </body>

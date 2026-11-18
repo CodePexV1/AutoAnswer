@@ -1,19 +1,23 @@
 // AutoAnswer - background service worker
-// Handles settings, screenshots and the calls to Grok (xAI) / OpenAI.
+// Handles settings, screenshots and the calls to Groq (free) / OpenAI.
 
 const DEFAULTS = {
   enabled: false,
-  provider: 'grok', // 'grok' | 'openai'
-  grokKey: '',
+  stealth: true, // hide everything on the page (no outline, no toasts, no badge)
+  provider: 'groq', // 'groq' | 'openai'
+  groqKey: '',
   openaiKey: '',
-  grokModel: 'grok-4',
+  groqModel: 'openai/gpt-oss-120b',
+  groqVisionModel: 'qwen/qwen3.8-27b', // used automatically when a screenshot is attached
   openaiModel: 'gpt-4o'
 };
 
 const PROVIDERS = {
-  grok: { base: 'https://api.x.ai/v1', keyField: 'grokKey', modelField: 'grokModel', name: 'Grok' },
+  groq: { base: 'https://api.groq.com/openai/v1', keyField: 'groqKey', modelField: 'groqModel', name: 'Groq' },
   openai: { base: 'https://api.openai.com/v1', keyField: 'openaiKey', modelField: 'openaiModel', name: 'ChatGPT' }
 };
+// Groq models that accept images (see console.groq.com/docs/vision).
+const GROQ_VISION_RE = /qwen3\.8|muse-spark|vision|llama-4/i;
 
 const MAX_IMAGE_WIDTH = 1600;
 const REQUEST_TIMEOUT_MS = 120000;
@@ -23,8 +27,8 @@ function getSettings() {
 }
 
 async function updateBadge() {
-  const { enabled } = await getSettings();
-  await chrome.action.setBadgeText({ text: enabled ? 'ON' : '' });
+  const { enabled, stealth } = await getSettings();
+  await chrome.action.setBadgeText({ text: enabled && !stealth ? 'ON' : '' });
   await chrome.action.setBadgeBackgroundColor({ color: '#16a34a' });
 }
 
@@ -37,7 +41,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 chrome.runtime.onStartup.addListener(updateBadge);
 chrome.storage.onChanged.addListener((changes) => {
-  if (changes.enabled) updateBadge();
+  if (changes.enabled || changes.stealth) updateBadge();
 });
 
 chrome.commands.onCommand.addListener(async (cmd) => {
@@ -48,7 +52,7 @@ chrome.commands.onCommand.addListener(async (cmd) => {
 
 // Pick the provider to use: the selected one, or the other one if only it has a key.
 function resolveProvider(s) {
-  const order = s.provider === 'openai' ? ['openai', 'grok'] : ['grok', 'openai'];
+  const order = s.provider === 'openai' ? ['openai', 'groq'] : ['groq', 'openai'];
   for (const id of order) {
     const p = PROVIDERS[id];
     if (s[p.keyField] && s[p.keyField].trim()) {
@@ -80,9 +84,20 @@ async function chat({ system, user, image }) {
   const p = resolveProvider(s);
   if (!p) throw new Error('NO_KEY');
 
-  const content = image
-    ? [{ type: 'text', text: user }, { type: 'image_url', image_url: { url: image, detail: 'high' } }]
-    : user;
+  let model = p.model;
+  let messages;
+  if (p.id === 'groq') {
+    // Groq: switch to a vision model for screenshots, keep the prompt in one user message.
+    if (image && !GROQ_VISION_RE.test(model)) model = (s.groqVisionModel || DEFAULTS.groqVisionModel).trim();
+    messages = image
+      ? [{ role: 'user', content: [{ type: 'text', text: system + '\n\n' + user }, { type: 'image_url', image_url: { url: image } }] }]
+      : [{ role: 'system', content: system }, { role: 'user', content: user }];
+  } else {
+    const content = image
+      ? [{ type: 'text', text: user }, { type: 'image_url', image_url: { url: image, detail: 'high' } }]
+      : user;
+    messages = [{ role: 'system', content: system }, { role: 'user', content }];
+  }
 
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
@@ -92,13 +107,7 @@ async function chat({ system, user, image }) {
       method: 'POST',
       signal: ctrl.signal,
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + p.key },
-      body: JSON.stringify({
-        model: p.model,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content }
-        ]
-      })
+      body: JSON.stringify({ model, messages })
     });
   } catch (e) {
     throw new Error(e.name === 'AbortError' ? 'TIMEOUT' : 'NETWORK: ' + e.message);
@@ -114,8 +123,9 @@ async function chat({ system, user, image }) {
   }
   const data = JSON.parse(text);
   const msg = data.choices?.[0]?.message?.content;
-  const reply = Array.isArray(msg) ? msg.map((c) => c.text || '').join('') : (msg || '');
-  return { reply, provider: p.name, model: p.model };
+  let reply = Array.isArray(msg) ? msg.map((c) => c.text || '').join('') : (msg || '');
+  reply = reply.replace(/<think>[\s\S]*?<\/think>/gi, '').trim(); // reasoning models (Qwen) may inline their thinking
+  return { reply, provider: p.name, model };
 }
 
 async function listModels(provider, key) {
